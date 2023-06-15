@@ -8,7 +8,7 @@ async function listMembers(db, bot, chatId) {
   members.forEach((m) => {
     message += `${m.name}` + m.isAdmin ? ' [ADMIN]' : '';
   })
-  await bot.sendMessage(chatId, message, {parse_mode: 'Markdown'});
+  await bot.sendMessage(chatId, message, {parse_mode: 'html'});
 }
 async function addMember() {}
 async function editMember() {}
