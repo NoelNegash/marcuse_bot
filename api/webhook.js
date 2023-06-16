@@ -8,7 +8,7 @@ async function listMembers(db, bot, chatId) {
   members.forEach((m) => {
     m = m.data()
 
-    message += `${m.name}` + (m.isAdmin ? ' [ADMIN]' : '');
+    message += `${m.name} ${m.isAdmin ? ' [ADMIN]' : ''} | ${m.borrowed_books.length} books currently borrowed.`;
   })
   await bot.sendMessage(chatId, message, {parse_mode: 'html'});
 }
