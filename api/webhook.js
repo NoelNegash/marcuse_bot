@@ -7,8 +7,8 @@ async function listMembers(db, bot, chatId) {
 
   members.forEach((m) => {
     m = m.data()
-
-    message += `${m.name}` + m.isAdmin ? ' [ADMIN]' : '';
+    
+    message += JSON.stringify(m)//`${m.name}` + m.isAdmin ? ' [ADMIN]' : '';
   })
   await bot.sendMessage(chatId, message, {parse_mode: 'html'});
 }
