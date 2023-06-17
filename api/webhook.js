@@ -49,13 +49,13 @@ async function memberInfo(db, bot, chatId, message) {
     return;
   }
   member = member.docs[0].data()
-  var returnMessage = `${member.name}, ${member.borrowed_books.length} book ${member.borrowed_books.length == 1 ? "" : "s"} borrowed.\n`
+  var returnMessage = `${member.name}, ${member.borrowed_books.length} book${member.borrowed_books.length == 1 ? "" : "s"} borrowed.\n`
 
   if (member.borrowed_books.length) {
     var books = (await db.collection('books').where(admin.firestore.FieldPath.documentId(), 'in', member.borrowed_books).get());
     books.forEach(book => {
       book = book.data()
-      returnMessage += `\t${prettifyBook(book)}  Due: ${book.due_date}\n`
+      returnMessage += `\t${prettifyBook(book)}  Due: ${book.due_date.toDate().toLocaleString()}\n`
     })
   }
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
