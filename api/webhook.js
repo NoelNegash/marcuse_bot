@@ -1,8 +1,9 @@
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
 
-function prettifyBook(book) {
-  return `"${book.title}" by ${book.author}    ISBN: ${book.isbn}`
+function prettifyBook(book, verbose = false) {
+  return `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` + 
+    verbose ? ` ${book.borrowed==""?"":"[Checked Out]"} ${book.reserved==""?"":"[Reserved]"} ${book.special?"[Special]":""}` : '';
 }
 
 async function listMembers(db, bot, chatId) {
@@ -60,7 +61,17 @@ async function memberInfo(db, bot, chatId, message) {
   }
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
-async function listBooks(db, bot, chatId, message) {}
+async function listBooks(db, bot, chatId, message) {
+  var books = await db.collection('books').get();
+  var message = ''
+
+  books.forEach((b) => {
+    b = b.data()
+
+    message += `${prettifyBook(b, true)}`;
+  })
+  await bot.sendMessage(chatId, message, {parse_mode: 'html'});
+}
 async function addBook(db, bot, chatId, message) {}
 async function removeBook(db, bot, chatId, message) {}
 async function searchBook(db, bot, chatId, message) {}
