@@ -14,7 +14,7 @@ async function listMembers(db, bot, chatId) {
 }
 async function registerMember(db, bot, chatId, message, telegramId) {
   var name = message.split('/register')[1]
-  var canRegister = await db.collection('members').where('telegram_id', '==', telegramId).empty;
+  var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId)).empty;
   if (!canRegister) {
     await bot.sendMessage(chatId, "Already registered.", {parse_mode: 'html'});
     return;
