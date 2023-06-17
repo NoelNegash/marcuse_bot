@@ -49,17 +49,15 @@ async function memberInfo(db, bot, chatId, message) {
     return;
   }
   member = member.docs[0].data()
-  var books = (await db.collection('books').where(admin.firestore.FieldPath.documentId(), 'in', member.borrowed_books).get());
-  
   var returnMessage = `${member.name}, ${member.borrowed_books.length} book ${member.borrowed_books.length == 1 ? "" : "s"} borrowed.\n`
 
-  // print member information
-
-  // go through all of the member's checked out books and print them too
-  books.forEach(book => {
-    book = book.data()
-    returnMessage += `\t${prettifyBook(book)}  Due: ${book.due_date}\n`
-  })
+  if (member.borrowed_books.length) {
+    var books = (await db.collection('books').where(admin.firestore.FieldPath.documentId(), 'in', member.borrowed_books).get());
+    books.forEach(book => {
+      book = book.data()
+      returnMessage += `\t${prettifyBook(book)}  Due: ${book.due_date}\n`
+    })
+  }
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function listBooks(db, bot, chatId, message) {}
