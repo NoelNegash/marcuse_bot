@@ -17,7 +17,7 @@ async function listMembers(db, bot, chatId) {
   await bot.sendMessage(chatId, message, {parse_mode: 'html'});
 }
 async function registerMember(db, bot, chatId, message, telegramId) {
-  var name = message.split('/register ', 1)[1]
+  var name = message.split('/register ', 2)[1]
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
   if (!canRegister) {
     await bot.sendMessage(chatId, "Already registered.", {parse_mode: 'html'});
@@ -43,7 +43,7 @@ async function registerMember(db, bot, chatId, message, telegramId) {
 }
 async function editMember() {}
 async function memberInfo(db, bot, chatId, message) {
-  var member = (await db.collection('members').where('name', '==', message.split('/member ', 1)[1] || '').limit(1).get());
+  var member = await db.collection('members').where('name', '==', message.split('/member ', 2)[1] || '').get();
   if (member.empty) {
     await bot.sendMessage(chatId, "Member doesn't exist.", {parse_mode: 'html'});
     return;
@@ -51,16 +51,16 @@ async function memberInfo(db, bot, chatId, message) {
   member = member.docs[0].data()
   var books = (await db.collection('books').where(admin.firestore.FieldPath.documentId(), 'in', member.borrowed_books).get());
   
-  var message = `${member.name}, ${member.borrowed_books.length} book ${member.borrowed_books.length == 1 ? "" : "s"} borrowed.\n`
+  var returnMessage = `${member.name}, ${member.borrowed_books.length} book ${member.borrowed_books.length == 1 ? "" : "s"} borrowed.\n`
 
   // print member information
 
   // go through all of the member's checked out books and print them too
   books.forEach(book => {
     book = book.data()
-    message += `\t${prettifyBook(book)}  Due: ${book.due_date}\n`
+    returnMessage += `\t${prettifyBook(book)}  Due: ${book.due_date}\n`
   })
-  await bot.sendMessage(chatId, message, {parse_mode: 'html'});
+  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function listBooks(db, bot, chatId, message) {}
 async function addBook(db, bot, chatId, message) {}
