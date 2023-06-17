@@ -62,14 +62,14 @@ async function memberInfo(db, bot, chatId, message) {
   }
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
-async function listBooks(db, bot, chatId, message) {
+async function listBooks(db, bot, chatId) {
   var books = await db.collection('books').get();
   var returnMessage = ''
 
   books.forEach((b) => {
     b = b.data()
 
-    returnMessage += `${prettifyBook(b, true)}`;
+    returnMessage += `${prettifyBook(b, true)}\n`;
   })
 
   if (returnMessage == '') returnMessage = "No books yet."
@@ -110,8 +110,8 @@ module.exports = async (request, response) => {
         await registerMember(db, bot, id, text, body.message.from.id)
       } else if (text.startsWith("/member")) {
         await memberInfo(db, bot, id, text)
-      } else if (text.startsWith("/list-book")) {
-        await listBooks(db, bot, id, text)
+      } else if (text.startsWith("/list-books")) {
+        await listBooks(db, bot, id)
       } else if (text.startsWith("/add-book")) {
         await addBook(db, bot, id, text)
       } else if (text.startsWith("/remove-book")) {
