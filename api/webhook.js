@@ -8,11 +8,35 @@ async function listMembers(db, bot, chatId) {
   members.forEach((m) => {
     m = m.data()
 
-    message += `${m.name} ${m.isAdmin ? ' [ADMIN]' : ''} | ${m.borrowed_books.length} books currently borrowed.`;
+    message += `${m.name} ${m.isAdmin ? ' [ADMIN]' : ''} | ${m.borrowed_books.length} books currently borrowed.\n`;
   })
   await bot.sendMessage(chatId, message, {parse_mode: 'html'});
 }
-async function addMember() {}
+async function registerMember(db, bot, chatId, message, telegramId) {
+  var name = message.split('/register')[1]
+  var canRegister = await db.collection('members').where('telegram_id', '==', telegramId).empty;
+  if (!canRegister) {
+    await bot.sendMessage(chatId, "Already registered.", {parse_mode: 'html'});
+    return;
+  }
+  if (name == undefined || name == '') {
+    await bot.sendMessage(chatId, "Add a name.", {parse_mode: 'html'});
+    return;
+  }
+  
+
+  var member = {
+    admin: false,
+    borrowed_books: [],
+    name: name,
+    telegram_id: telegramId,
+    total_borrowed: 0
+  }
+
+  // todo save member
+  await db.collection('members').add(member)
+  await bot.sendMessage(chatId, `New member \n. ${JSON.stringify(member)}`, {parse_mode: 'html'});
+}
 async function editMember() {}
 async function memberInfo() {}
 async function listBooks() {}
@@ -43,6 +67,10 @@ module.exports = async (request, response) => {
 
       if (text == "/list-members") {
         await listMembers(db, bot, id)
+      } else if (text.startsWith("/list-members")) {
+        await addMember(db, bot, id, text)
+      } else if (text.startsWith("/register")) {
+        await registerMember(db, bot, id, text, body.message.from.id)
       }
     }
   }
