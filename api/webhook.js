@@ -53,9 +53,11 @@ async function statistics() {}
 module.exports = async (request, response) => {
   try {
     const firebaseAccount = JSON.parse(process.env.FIREBASE_KEY);
-    admin.initializeApp({
-      credential: admin.credential.cert(firebaseAccount)
-    });
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(firebaseAccount)
+      });
+    }
 
     const db = admin.firestore();
     const bot = new TelegramBot(process.env.TELEGRAM_TOKEN);
