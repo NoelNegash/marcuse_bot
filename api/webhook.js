@@ -8,14 +8,15 @@ function prettifyBook(book, verbose = false) {
 
 async function listMembers(db, bot, chatId) {
   var members = await db.collection('members').get();
-  var message = ''
+  var returnMessage = ''
 
   members.forEach((m) => {
     m = m.data()
 
-    message += `${m.name} ${m.isAdmin ? ' [ADMIN]' : ''} | ${m.borrowed_books.length} books currently borrowed.\n`;
+    returnMessage += `${m.name} ${m.isAdmin ? ' [ADMIN]' : ''} | ${m.borrowed_books.length} books currently borrowed.\n`;
   })
-  await bot.sendMessage(chatId, message, {parse_mode: 'html'});
+  if (returnMessage == '') returnMessage = "No members yet."
+  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function registerMember(db, bot, chatId, message, telegramId) {
   var name = message.split('/register ', 2)[1]
@@ -63,14 +64,16 @@ async function memberInfo(db, bot, chatId, message) {
 }
 async function listBooks(db, bot, chatId, message) {
   var books = await db.collection('books').get();
-  var message = ''
+  var returnMessage = ''
 
   books.forEach((b) => {
     b = b.data()
 
-    message += `${prettifyBook(b, true)}`;
+    returnMessage += `${prettifyBook(b, true)}`;
   })
-  await bot.sendMessage(chatId, message, {parse_mode: 'html'});
+
+  if (returnMessage == '') returnMessage = "No books yet."
+  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function addBook(db, bot, chatId, message) {}
 async function removeBook(db, bot, chatId, message) {}
