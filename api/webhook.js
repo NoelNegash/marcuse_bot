@@ -43,12 +43,13 @@ async function registerMember(db, bot, chatId, message, telegramId) {
 }
 async function editMember() {}
 async function memberInfo(db, bot, chatId, message) {
-  var member = (await db.collection('members').where('name', '==', message.split('/member ', 1)[1]).limit(1).get()).docs[0];
+  var member = (await db.collection('members').where('name', '==', message.split('/member ', 1)[1] || '').limit(1).get()).docs[0];
   if (!member) {
     await bot.sendMessage(chatId, "Member doesn't exist.", {parse_mode: 'html'});
     return;
   }
-  var books = (await db.collection('books').where(admin.firestore.FieldPath.documentId(), 'in', member.borrowed_books).get()).docs[0];
+  member = member.data()
+  var books = (await db.collection('books').where(admin.firestore.FieldPath.documentId(), 'in', member.borrowed_books).get());
   
   var message = `${member.name}, ${member.borrowed_books.length} book ${member.borrowed_books.length == 1 ? "" : "s"} borrowed.\n`
 
@@ -56,6 +57,7 @@ async function memberInfo(db, bot, chatId, message) {
 
   // go through all of the member's checked out books and print them too
   books.forEach(book => {
+    book = book.data()
     message += `\t${prettifyBook(book)}  Due: ${book.due_date}\n`
   })
   await bot.sendMessage(chatId, message, {parse_mode: 'html'});
