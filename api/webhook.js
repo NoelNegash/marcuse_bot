@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 function prettifyBook(book, verbose = false) {
   var res = `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` 
-  if (verbose) res += `${book.borrowed==""?"":"[Checked Out]"} ${book.reserved==""?"":"[Reserved]"} ${book.special?"[Special]":""}`;
+  if (verbose) res += `${book.borrowed?"":"[Checked Out]"} ${book.reserved?"":"[Reserved]"} ${book.special?"[Special]":""}`;
   return res
 }
 function quoteSplit(s) {
@@ -122,7 +122,7 @@ async function addBook(db, bot, chatId, message, telegramId) {
     dueDate: null,
     reservation: null,
     totalTimesBorrowed: 0,
-    "special": split != undefined
+    "special": special != undefined
   }
   await db.collection('books').add(book)
   await bot.sendMessage(chatId, "Book registered", {parse_mode: 'html'});
