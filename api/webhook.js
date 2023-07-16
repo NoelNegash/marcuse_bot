@@ -7,7 +7,7 @@ function prettifyBook(book, verbose = false) {
   return res
 }
 function quoteSplit(s) {
-  return str.match(/\\?.|^$/g).reduce((p, c) => {
+  return s.match(/\\?.|^$/g).reduce((p, c) => {
       if(c === '"'){
           p.quote ^= 1;
       }else if(!p.quote && c === ' '){
