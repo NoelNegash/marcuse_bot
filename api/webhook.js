@@ -80,7 +80,7 @@ async function listBooks(db, bot, chatId) {
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function addBook(db, bot, chatId, message) {
-  var split = quoteSplit(message.split('/add-book ', 2)[1])
+  var split = quoteSplit(message.split('/add-book ', 2)[1] || '')
   var name = split[0], author = split[1], isbn = split[2], special = split[3]
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
   if (canRegister) {
