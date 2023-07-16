@@ -6,6 +6,9 @@ function prettifyBook(book, verbose = false) {
   if (verbose) res += `${book.borrowed==""?"":"[Checked Out]"} ${book.reserved==""?"":"[Reserved]"} ${book.special?"[Special]":""}`;
   return res
 }
+function quoteSplit(s) {
+  return s.match(/(?:[^\s"]+|"[^"]*")+/g) 
+}
 
 async function listMembers(db, bot, chatId) {
   var members = await db.collection('members').get();
@@ -76,8 +79,48 @@ async function listBooks(db, bot, chatId) {
   if (returnMessage == '') returnMessage = "No books yet."
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
-async function addBook(db, bot, chatId, message) {}
-async function removeBook(db, bot, chatId, message) {}
+async function addBook(db, bot, chatId, message) {
+  var split = quoteSplit(message.split('/add-book ', 2)[1])
+  var name = split[0], author = split[1], isbn = split[2], special = split[3]
+  var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
+  if (canRegister) {
+    await bot.sendMessage(chatId, "You are not a registered member.", {parse_mode: 'html'});
+    return;
+  }
+  if (name == undefined || name == '') {
+    await bot.sendMessage(chatId, "Add a name.", {parse_mode: 'html'});
+    return;
+  }
+  if (author == undefined || author == '') {
+    await bot.sendMessage(chatId, "Add an author.", {parse_mode: 'html'});
+    return;
+  }
+  if (isbn == undefined || isbn == '') {
+    await bot.sendMessage(chatId, "Add an isbn.", {parse_mode: 'html'});
+    return;
+  }
+  
+
+  var book = {
+    admin: false,
+    borrowed_books: [],
+    "name": name,
+    "author":author,
+    "isbn": isbn,
+    total_borrowed: 0,
+    checkOutMember: null,
+    checkOutDate: null,
+    dueDate: null,
+    reservation: null,
+    totalTimesBorrowed: 0,
+    "special": split != undefined
+  }
+  await db.collection('books').add(book)
+  await bot.sendMessage(chatId, "Book registered", {parse_mode: 'html'});
+}
+async function removeBook(db, bot, chatId, message) {
+  
+}
 async function searchBook(db, bot, chatId, message) {}
 async function borrowBook(db, bot, chatId, message) {}
 async function reserveBook(db, bot, chatId, message) {}
