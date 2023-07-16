@@ -88,7 +88,7 @@ async function listBooks(db, bot, chatId) {
   if (returnMessage == '') returnMessage = "No books yet."
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
-async function addBook(db, bot, chatId, message) {
+async function addBook(db, bot, chatId, message, telegramId) {
   var split = quoteSplit(message.split('/add-book ', 2)[1] || '')
   var name = split[0], author = split[1], isbn = split[2], special = split[3]
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
@@ -166,7 +166,7 @@ module.exports = async (request, response) => {
       } else if (text.startsWith("/list-books")) {
         await listBooks(db, bot, id)
       } else if (text.startsWith("/add-book")) {
-        await addBook(db, bot, id, text)
+        await addBook(db, bot, id, text, body.message.from.id)
       } else if (text.startsWith("/remove-book")) {
         await removeBook(db, bot, id, text)
       } else if (text.startsWith("/search-book")) {
