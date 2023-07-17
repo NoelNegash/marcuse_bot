@@ -201,6 +201,8 @@ async function returnBook(db, bot, chatId, message, telegramId) {
   var books = await db.collection('books').where("isbn", '==', isbn).get();
   var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
 
+  var bookReturned = true
+
   for (var i = 0; i < books.docs.length; i++) {
     var b = books.docs[i]
     var bookId = b.id
@@ -210,7 +212,7 @@ async function returnBook(db, bot, chatId, message, telegramId) {
     for (var j = 0; j < members.docs.length; j++) {
       var m = members.docs[j]
       var data = m.data();
-      
+
       if (data.borrowed_books.includes(bookId)) {
         await db.collection('members').doc(m.id).update({
           borrowed_books: m.data().borrowed_books.filter(x => x != bookId)
@@ -221,11 +223,12 @@ async function returnBook(db, bot, chatId, message, telegramId) {
         };
         await bookRef.update(updates)
         await bot.sendMessage(chatId, "Book returned.", {parse_mode: 'html'});
-      } else {
-        await bot.sendMessage(chatId, "Book is not borrowed.", {parse_mode: 'html'});
+        bookReturned = true
       }
     }
   }
+
+  if (!bookReturned) await bot.sendMessage(chatId, "Book is not borrowed.", {parse_mode: 'html'});
 }
 async function overdueBooks(db, bot, chatId, message) {}
 async function statistics(db, bot, chatId, message) {}
