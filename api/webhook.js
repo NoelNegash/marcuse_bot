@@ -117,17 +117,14 @@ async function addBook(db, bot, chatId, message, telegramId) {
   
 
   var book = {
-    admin: false,
-    borrowed_books: [],
     "title": title,
     "author":author,
     "isbn": isbn,
     total_borrowed: 0,
-    checkOutMember: null,
-    checkOutDate: null,
-    dueDate: null,
-    reservation: null,
-    totalTimesBorrowed: 0,
+    borrowed: null,
+    borrowed_date: null,
+    due_date: null,
+    reserved: null,
     "special": special != undefined
   }
   await db.collection('books').add(book)
@@ -153,7 +150,42 @@ async function searchBook(db, bot, chatId, message) {
   if (returnMessage == '') returnMessage = "No books found."
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
-async function borrowBook(db, bot, chatId, message) {}
+async function borrowBook(db, bot, chatId, message, telegramId) {
+  var isbn = (message.split('/borrow-book ', 2)[1] || '')
+  var books = await db.collection('books').where("isbn", '==', isbn).get();
+  var returnMessage = ''
+
+  books.forEach(async (b) => {
+    var bookId = b.id
+    var bookRef = db.collection('books').doc(b.id);
+    b = b.data()
+    
+    var updates = {
+      borrowed: telegramId,
+      total_borrowed: b.total_borrowed + 1
+    };
+    await bookRef.update(updates)
+
+    var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
+    members.forEach(async (m) => {
+      await db.collection('members').doc(m.id).update(
+        {
+          total_borrowed: m.data().total_borrowed + 1,
+          borrowed_books: m.data().borrowed_books.concat([bookId])
+        }
+      )
+    })
+
+    
+    if (stringContainsAny(b.title.toLowerCase(), searchTerms) ||
+        stringContainsAny(b.author.toLowerCase(), searchTerms) ||
+        stringContainsAny(b.isbn.toLowerCase(), searchTerms))
+      returnMessage += `Borrowed ${prettifyBook(b, true)}\n`;
+  })
+
+  if (returnMessage == '') returnMessage = "No books borrowed."
+  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
+}
 async function reserveBook(db, bot, chatId, message) {}
 async function returnBook(db, bot, chatId, message) {}
 async function overdueBooks(db, bot, chatId, message) {}
@@ -194,11 +226,11 @@ module.exports = async (request, response) => {
       } else if (text.startsWith("/search-book")) {
         await searchBook(db, bot, id, text)
       } else if (text.startsWith("/borrow-book")) {
-        await borrowBook(db, bot, id, text)
+        await borrowBook(db, bot, id, text, body.message.from.id)
       } else if (text.startsWith("/reserve-book")) {
-        await reserveBook(db, bot, id, text)
+        await reserveBook(db, bot, id, text, body.message.from.id)
       } else if (text.startsWith("/return-book")) {
-        await returnBook(db, bot, id, text)
+        await returnBook(db, bot, id, text, body.message.from.id)
       } else if (text.startsWith("/overdue-books")) {
         await overdueBooks(db, bot, id, text)
       } else if (text.startsWith("/statistics")) {
