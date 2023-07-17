@@ -155,7 +155,7 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
   var books = await db.collection('books').where("isbn", '==', isbn).get();
   var returnMessage = ''
 
-  books.forEach(async (b) => {
+  await books.forEach(async (b) => {
     var bookId = b.id
     var bookRef = db.collection('books').doc(b.id);
     b = b.data()
@@ -175,12 +175,8 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
         }
       )
     })
-
     
-    if (stringContainsAny(b.title.toLowerCase(), searchTerms) ||
-        stringContainsAny(b.author.toLowerCase(), searchTerms) ||
-        stringContainsAny(b.isbn.toLowerCase(), searchTerms))
-      returnMessage += `Borrowed ${prettifyBook(b, true)}\n`;
+    returnMessage += `Borrowed ${prettifyBook(b, true)}\n`;
   })
 
   if (returnMessage == '') returnMessage = "No books borrowed."
