@@ -3,7 +3,7 @@ const admin = require('firebase-admin');
 
 function prettifyBook(book, verbose = false) {
   var res = `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` 
-  if (verbose) res += `${book.borrowed?"":"[Checked Out]"} ${book.reserved?"":"[Reserved]"} ${book.special?"[Special]":""}`;
+  if (verbose) res += `${book.borrowed?"[Checked Out]":""} ${book.reserved?"[Reserved]":""} ${book.special?"[Special]":""}`;
   return res
 }
 function quoteSplit(s) {
