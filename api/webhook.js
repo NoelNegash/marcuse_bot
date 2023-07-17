@@ -156,7 +156,7 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
 
   var isbn = (message.split('/borrow-book ', 2)[1] || '')
   var books = await db.collection('books').where("isbn", '==', isbn).get();
-  
+
   for (var i = 0; i < books.docs.length; i++) {
     var b = books.docs[i]
     var bookId = b.id
@@ -174,7 +174,7 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
       await db.collection('members').doc(m.id).update(
         {
           total_borrowed: m.data().total_borrowed + 1,
-          borrowed_books: m.data().borrowed_books.concat([bookId])
+          borrowed_books: m.data().borrowed_books.concat(bookId)
         }
       )
     }   
