@@ -138,9 +138,9 @@ async function removeBook(db, bot, chatId, message) {
 }
 async function searchBook(db, bot, chatId, message) {
   var searchTerms = message.split('/search-book ', 2)[1]
-  if (!searchTerms) searchTerms = ''
+  if (searchTerms == undefined) searchTerms = ''
   searchTerms = searchTerms.toLowerCase().split(' ')
-  
+
   var books = await db.collection('books').get();
   var returnMessage = ''
 
