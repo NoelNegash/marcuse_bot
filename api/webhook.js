@@ -131,9 +131,9 @@ async function removeBook(db, bot, chatId, message) {
   
 }
 async function searchBook(db, bot, chatId, message) {
-  var searchTerms = (message.split('/search-book ', 2)[1] || '').split(' ')
+  var searchTerm = (message.split('/search-book ', 2)[1] || '')
   var books = await db.collection('books')
-    .where('title', 'array-contains-any', searchTerms)
+    .where('title', 'array-contains', searchTerm)
     .get();
     //todo search by authors and isbn
   var returnMessage = ''
