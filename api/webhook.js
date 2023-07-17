@@ -195,7 +195,38 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function reserveBook(db, bot, chatId, message) {}
-async function returnBook(db, bot, chatId, message) {}
+async function returnBook(db, bot, chatId, message, telegramId) {
+  var isbn = (message.split('/return-book ', 2)[1] || '')
+
+  var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
+  for (var j = 0; j < members.docs.length; j++) {
+    var m = members.docs[j]
+    var data = m.data();
+    if (data.borrowed_books.includes(bookId)) {
+      await db.collection('members').doc(m.id).update({
+        borrowed_books: m.data().borrowed_books.filter(x => x != bookId)
+      })
+
+      var books = await db.collection('books').where("isbn", '==', isbn).get();
+
+      for (var i = 0; i < books.docs.length; i++) {
+        var b = books.docs[i]
+        var bookId = b.id
+        var bookRef = db.collection('books').doc(b.id);
+        b = b.data()
+
+        var updates = {
+          borrowed: null
+        };
+        await bookRef.update(updates)
+      }
+
+      await bot.sendMessage(chatId, "Book returned.", {parse_mode: 'html'});
+    } else {
+      await bot.sendMessage(chatId, "Book is not borrowed.", {parse_mode: 'html'});
+    }
+  }
+}
 async function overdueBooks(db, bot, chatId, message) {}
 async function statistics(db, bot, chatId, message) {}
 
