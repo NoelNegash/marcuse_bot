@@ -7,7 +7,16 @@ function prettifyBook(book, verbose = false) {
   return res
 }
 function quoteSplit(s) {
-  return s.match(/(?:[^\s"]+|"[^"]*")+/g) 
+  return s.match(/\\?.|^$/g).reduce((p, c) => {
+      if(c === '"'){
+          p.quote ^= 1;
+      }else if(!p.quote && c === ' '){
+          p.a.push('');
+      }else{
+          p.a[p.a.length-1] += c.replace(/\\(.)/,"$1");
+      }
+      return  p;
+  }, {a: ['']}).a
 }
 
 async function listMembers(db, bot, chatId) {
@@ -81,13 +90,13 @@ async function listBooks(db, bot, chatId) {
 }
 async function addBook(db, bot, chatId, message, telegramId) {
   var split = quoteSplit(message.split('/add-book ', 2)[1] || '')
-  var name = split[0], author = split[1], isbn = split[2], special = split[3]
+  var title = split[0], author = split[1], isbn = split[2], special = split[3]
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
   if (canRegister) {
     await bot.sendMessage(chatId, "You are not a registered member.", {parse_mode: 'html'});
     return;
   }
-  if (name == undefined || name == '') {
+  if (title == undefined || title == '') {
     await bot.sendMessage(chatId, "Add a name.", {parse_mode: 'html'});
     return;
   }
@@ -104,7 +113,7 @@ async function addBook(db, bot, chatId, message, telegramId) {
   var book = {
     admin: false,
     borrowed_books: [],
-    "name": name,
+    "title": title,
     "author":author,
     "isbn": isbn,
     total_borrowed: 0,
@@ -121,7 +130,24 @@ async function addBook(db, bot, chatId, message, telegramId) {
 async function removeBook(db, bot, chatId, message) {
   
 }
-async function searchBook(db, bot, chatId, message) {}
+async function searchBook(db, bot, chatId, message) {
+  var searchTerms = (message.split('/search-book ', 2)[1] || '').toLowerCase().split(' ')
+  var books = await db.collection('books')
+    .where('title', 'array-contains-any', searchTerms)
+    .where('author', 'array-contains-any', searchTerms)
+    .where('isbn', 'array-contains-any', searchTerms)
+    .get();
+  var returnMessage = ''
+
+  books.forEach((b) => {
+    b = b.data()
+
+    returnMessage += `${prettifyBook(b, true)}\n`;
+  })
+
+  if (returnMessage == '') returnMessage = "No books found."
+  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
+}
 async function borrowBook(db, bot, chatId, message) {}
 async function reserveBook(db, bot, chatId, message) {}
 async function returnBook(db, bot, chatId, message) {}
