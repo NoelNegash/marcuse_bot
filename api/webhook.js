@@ -180,10 +180,14 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
     }   
     if (alreadyBorrowed) break;
     
-    
+    var dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 7);
+
     var updates = {
       borrowed: telegramId,
-      total_borrowed: b.total_borrowed + 1
+      total_borrowed: b.total_borrowed + 1,
+      borrowed_date: new Date(),
+      due_date: dueDate
     };
     await bookRef.update(updates)
 
@@ -219,7 +223,9 @@ async function returnBook(db, bot, chatId, message, telegramId) {
         })
 
         var updates = {
-          borrowed: null
+          borrowed: null,
+          due_date: null,
+          borrowed_date: null
         };
         await bookRef.update(updates)
         await bot.sendMessage(chatId, "Book returned.", {parse_mode: 'html'});
@@ -230,7 +236,20 @@ async function returnBook(db, bot, chatId, message, telegramId) {
 
   if (!bookReturned) await bot.sendMessage(chatId, "Book is not borrowed.", {parse_mode: 'html'});
 }
-async function overdueBooks(db, bot, chatId, message) {}
+async function overdueBooks(db, bot, chatId, message) {
+  var books = await db.collection('books').get();
+  var returnMessage = ''
+
+  books.forEach((b) => {
+    b = b.data()
+
+    if (b.due_date != null && b.due_date < new Date().getTime())
+      returnMessage += `${prettifyBook(b, true)}\n`;
+  })
+
+  if (returnMessage == '') returnMessage = "No overdue books."
+  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
+}
 async function statistics(db, bot, chatId, message) {}
 
 
