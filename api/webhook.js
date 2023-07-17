@@ -18,6 +18,12 @@ function quoteSplit(s) {
       return  p;
   }, {a: ['']}).a
 }
+function stringContainsAny(str, arr) {
+  for (var i = 0; i < arr.length; i++) {
+    if (str.includes(arr[i])) return true
+  }
+  return false
+}
 
 async function listMembers(db, bot, chatId) {
   var members = await db.collection('members').get();
@@ -131,17 +137,17 @@ async function removeBook(db, bot, chatId, message) {
   
 }
 async function searchBook(db, bot, chatId, message) {
-  var searchTerm = (message.split('/search-book ', 2)[1] || '')
-  var books = await db.collection('books')
-    .where('title', 'array-contains', searchTerm)
-    .get();
-    //todo search by authors and isbn
+  var searchTerms = (message.split('/search-book ', 2)[1] || '').toLowerCase().split(' ')
+  var books = await db.collection('books').get();
   var returnMessage = ''
 
   books.forEach((b) => {
     b = b.data()
 
-    returnMessage += `${prettifyBook(b, true)}\n`;
+    if (stringContainsAny(b.title.toLowerCase(), searchTerms) ||
+        stringContainsAny(b.author.toLowerCase(), searchTerms) ||
+        stringContainsAny(b.isbn.toLowerCase(), searchTerms))
+      returnMessage += `${prettifyBook(b, true)}\n`;
   })
 
   if (returnMessage == '') returnMessage = "No books found."
