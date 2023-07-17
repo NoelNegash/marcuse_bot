@@ -151,15 +151,35 @@ async function searchBook(db, bot, chatId, message) {
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function borrowBook(db, bot, chatId, message, telegramId) {
+  var returnMessage = ''
+  var alreadyBorrowed = false
+
   var isbn = (message.split('/borrow-book ', 2)[1] || '')
   var books = await db.collection('books').where("isbn", '==', isbn).get();
-  var returnMessage = ''
-
+  
   for (var i = 0; i < books.docs.length; i++) {
     var b = books.docs[i]
     var bookId = b.id
     var bookRef = db.collection('books').doc(b.id);
     b = b.data()
+
+    var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
+    for (var j = 0; j < members.docs.length; j++) {
+      var m = members.docs[j]
+      var data = m.data();
+      if (data.borrowed_books.includes(bookId)) {
+        alreadyBorrowed = true;
+        break;
+      }
+      await db.collection('members').doc(m.id).update(
+        {
+          total_borrowed: m.data().total_borrowed + 1,
+          borrowed_books: m.data().borrowed_books.concat([bookId])
+        }
+      )
+    }   
+    if (alreadyBorrowed) break;
+    
     
     var updates = {
       borrowed: telegramId,
@@ -167,20 +187,11 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
     };
     await bookRef.update(updates)
 
-    var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
-    members.forEach(async (m) => {
-      await db.collection('members').doc(m.id).update(
-        {
-          total_borrowed: m.data().total_borrowed + 1,
-          borrowed_books: m.data().borrowed_books.concat([bookId])
-        }
-      )
-    })
-    
     returnMessage += `Borrowed ${prettifyBook(b, true)}\n`;
   }
 
-  if (returnMessage == '') returnMessage = "No books borrowed."
+  if (alreadyBorrowed) returnMessage = "Book already borrowed."
+  else if (returnMessage == '') returnMessage = "No books borrowed."
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function reserveBook(db, bot, chatId, message) {}
