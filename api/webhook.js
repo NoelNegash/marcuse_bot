@@ -201,7 +201,7 @@ async function returnBook(db, bot, chatId, message, telegramId) {
   var books = await db.collection('books').where("isbn", '==', isbn).get();
   var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
 
-  var bookReturned = true
+  var bookReturned = false
 
   for (var i = 0; i < books.docs.length; i++) {
     var b = books.docs[i]
