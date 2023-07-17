@@ -137,8 +137,12 @@ async function removeBook(db, bot, chatId, message) {
   
 }
 async function searchBook(db, bot, chatId, message) {
-  var searchTerms = message.split('/search-book ', 2)[1]
-  searchTerms = (searchTerms == '' || searchTerms == undefined) ? [] : searchTerms.toLowerCase().split(' ')
+  var searchTerms = (message.split('/search-book ', 2)[1] || '').split(' ')
+  for (var i = 0; i < searchTerms.length; i++) {
+    try{
+      searchTerms[i] = searchTerms[i].toLowerCase()
+    } catch(e) {}
+  }
 
   var books = await db.collection('books').get();
   var returnMessage = ''
