@@ -134,9 +134,8 @@ async function searchBook(db, bot, chatId, message) {
   var searchTerms = (message.split('/search-book ', 2)[1] || '').toLowerCase().split(' ')
   var books = await db.collection('books')
     .where('title', 'array-contains-any', searchTerms)
-    .where('author', 'array-contains-any', searchTerms)
-    .where('isbn', 'array-contains-any', searchTerms)
     .get();
+    //todo search by authors and isbn
   var returnMessage = ''
 
   books.forEach((b) => {
