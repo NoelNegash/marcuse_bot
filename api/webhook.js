@@ -303,7 +303,7 @@ module.exports = async (request, response) => {
         "book-details ": callbackBookDetails
       }
 
-      var func = callbackFunctions[callbackData.split(' '[0])]
+      var func = callbackFunctions[callbackData.split(' '[0])+' ']
       if (func) await func(db, bot, message.chat.id, callbackData.split(' ', 2)[1], message)
 
       bot.answerCallbackQuery(body.callback_query.id);
