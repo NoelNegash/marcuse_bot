@@ -40,7 +40,7 @@ async function listMembers(db, bot, chatId) {
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function registerMember(db, bot, chatId, message, telegramId) {
-  var name = message.split('/register ', 2)[1]
+  var name = message
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
   if (!canRegister) {
     await bot.sendMessage(chatId, "Already registered.", {parse_mode: 'html'});
@@ -66,7 +66,7 @@ async function registerMember(db, bot, chatId, message, telegramId) {
 }
 async function editMember() {}
 async function memberInfo(db, bot, chatId, message) {
-  var member = await db.collection('members').where('name', '==', message.split('/member ', 2)[1] || '').get();
+  var member = await db.collection('members').where('name', '==', message).get();
   if (member.empty) {
     await bot.sendMessage(chatId, "Member doesn't exist.", {parse_mode: 'html'});
     return;
@@ -97,7 +97,7 @@ async function listBooks(db, bot, chatId) {
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
 async function addBook(db, bot, chatId, message, telegramId) {
-  var split = quoteSplit(message.split('/add-book ', 2)[1] || '')
+  var split = quoteSplit(message)
   var title = split[0], author = split[1], isbn = split[2], special = split[3]
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
   if (canRegister) {
@@ -136,7 +136,7 @@ async function removeBook(db, bot, chatId, message) {
   
 }
 async function searchBook(db, bot, chatId, message) {
-  var searchTerms = (message.split('/search-book ', 2)[1] || '').toLowerCase().split(' ').filter(x => x != '')
+  var searchTerms = message.toLowerCase().split(' ').filter(x => x != '')
   var books = await db.collection('books').get();
 
   var returnKeyboard = [];
@@ -163,7 +163,7 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
   var returnMessage = ''
   var alreadyBorrowed = false
 
-  var isbn = (message.split('/borrow-book ', 2)[1] || '')
+  var isbn = message
   var books = await db.collection('books').where("isbn", '==', isbn).get();
 
   for (var i = 0; i < books.docs.length; i++) {
@@ -209,8 +209,7 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
 }
 async function reserveBook(db, bot, chatId, message) {}
 async function returnBook(db, bot, chatId, message, telegramId) {
-  var isbn = (message.split('/return-book ', 2)[1] || '')
-
+  var isbn = message
   var books = await db.collection('books').where("isbn", '==', isbn).get();
   var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
 
@@ -312,33 +311,23 @@ module.exports = async (request, response) => {
     } else if (body.message) {
       const { chat: { id }, text } = body.message;
 
-      if (text == "/list-members") {
-        await listMembers(db, bot, id)
-      } else if (text.startsWith("/list-members")) {
-        await addMember(db, bot, id, text)
-      } else if (text.startsWith("/register")) {
-        await registerMember(db, bot, id, text, body.message.from.id)
-      } else if (text.startsWith("/member")) {
-        await memberInfo(db, bot, id, text)
-      } else if (text.startsWith("/list-books")) {
-        await listBooks(db, bot, id)
-      } else if (text.startsWith("/add-book")) {
-        await addBook(db, bot, id, text, body.message.from.id)
-      } else if (text.startsWith("/remove-book")) {
-        await removeBook(db, bot, id, text)
-      } else if (text.startsWith("/search-book")) {
-        await searchBook(db, bot, id, text)
-      } else if (text.startsWith("/borrow-book")) {
-        await borrowBook(db, bot, id, text, body.message.from.id)
-      } else if (text.startsWith("/reserve-book")) {
-        await reserveBook(db, bot, id, text, body.message.from.id)
-      } else if (text.startsWith("/return-book")) {
-        await returnBook(db, bot, id, text, body.message.from.id)
-      } else if (text.startsWith("/overdue-books")) {
-        await overdueBooks(db, bot, id, text)
-      } else if (text.startsWith("/statistics")) {
-        await statistics(db, bot, id, text)
+      var commands = {
+        "/list-members": listMembers,
+        "/register": registerMember,
+        "/member": memberInfo,
+        "/list-books": listBooks,
+        "/add-book": addBook,
+        "/remove-book": removeBook,
+        "/search-book": searchBook, 
+        "/borrow-book": borrowBook,
+        "/reserve-book": reserveBook,
+        "/return-book": returnBook,
+        "/overdue-books": overdueBooks,
+        "/statistics":statistics
       }
+
+      var func = commands[text.split(' '[0])]
+      if (func) func (db, bot, id, text.split(' ',2)[1] || '', body.message.from.id)
     }
   }
   catch(error) {
