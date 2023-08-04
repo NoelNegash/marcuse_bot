@@ -279,7 +279,7 @@ async function callbackBookDetails(db, bot, chatId, data) {
   var returnMessage = prettifyBook(b, true)
   var returnKeyboard = [
     [
-      {text: "Borrow", callback_data: "borrow-book "+b.isbn},
+      b.borrowed ? {text: "Return", callback_data: "return-book "+b.isbn} : {text: "Borrow", callback_data: "borrow-book "+b.isbn},
       {text: "Reserve", callback_data: "reserve-book "+b.isbn}
     ]
   ];
@@ -314,7 +314,8 @@ module.exports = async (request, response) => {
 
       var callbackFunctions = {
         "book-details": callbackBookDetails,
-        "borrow-book": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, body.callback_query.from.id)
+        "borrow-book": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, body.callback_query.from.id), 
+        "return-book": (db, bot, chatId, text) => returnBook(db, bot, chatId, text, body.callback_query.from.id),
       }
 
       callbackData = callbackData.split(' ')
