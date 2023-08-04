@@ -1,6 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
 
+const url = "https://marcuse-bot.vercel.app/"
+
 function prettifyBook(book, verbose = false) {
   var res = `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` 
   if (verbose) res += `${book.borrowed?"[Checked Out]":""} ${book.reserved?"[Reserved]":""} ${book.special?"[Special]":""}`;
@@ -138,17 +140,29 @@ async function searchBook(db, bot, chatId, message) {
   var books = await db.collection('books').get();
   var returnMessage = ''
 
+  const returnKeyboard = [
+
+  ];
+
   books.forEach((b) => {
     b = b.data()
 
     if (stringContainsAny(b.title.toLowerCase(), searchTerms) ||
         stringContainsAny(b.author.toLowerCase(), searchTerms) ||
-        stringContainsAny(b.isbn.toLowerCase(), searchTerms))
+        stringContainsAny(b.isbn.toLowerCase(), searchTerms)) {
+
       returnMessage += `${prettifyBook(b, true)}\n`;
+      returnKeyboard.push([
+        {
+          text: prettifyBook(b, true),
+          callback_data: "book-details "+b.isbn
+        }
+      ])
+    }
   })
 
   if (returnMessage == '') returnMessage = "No books found."
-  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
+  await bot.sendMessage(chatId, returnMessage, {reply_markup: returnKeyboard, parse_mode: 'html'});
 }
 async function borrowBook(db, bot, chatId, message, telegramId) {
   var returnMessage = ''
