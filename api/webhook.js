@@ -306,8 +306,8 @@ module.exports = async (request, response) => {
 
     // check if the update contains a callback query
     if (body.callback_query) {
-      const callbackData = body.callback_query.data;
-      const message = body.callback_query.message;
+      var callbackData = body.callback_query.data;
+      var message = body.callback_query.message;
 
       var callbackFunctions = {
         "book-details": callbackBookDetails,
@@ -320,8 +320,8 @@ module.exports = async (request, response) => {
 
       bot.answerCallbackQuery(body.callback_query.id);
     } else if (body.message && body.message.photo && body.message.photo.length > 0) {
-        const caption = body.message.caption;
-        const fileId = body.message.photo[0].file_id;
+        var caption = body.message.caption;
+        var fileId = body.message.photo[0].file_id;
 
         var commands = {
           "/add-book": addBook,
@@ -332,7 +332,7 @@ module.exports = async (request, response) => {
         if (func) await func (db, bot, body.message.chat.id, caption.join(' '), body.message.from.id, fileId)
 
      } else if (body.message) {
-      const { chat: { id }, text } = body.message;
+      var { chat: { id }, text } = body.message;
 
       var commands = {
         "/list-members": listMembers,
