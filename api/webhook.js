@@ -277,15 +277,8 @@ async function callbackBookDetails(db, bot, chatId, data) {
     ]
   ];
 
-  const message = {
-    chat_id: chatId,
-    photo: SERVER_URL + "assets/covers/default.png",
-    reply_markup: {
-      inline_keyboard: returnKeyboard
-    }
-  };
   
-  await bot.sendPhoto(message)
+  await bot.sendPhoto(chatId, SERVER_URL + "assets/covers/default.png", {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
 }
 
 
