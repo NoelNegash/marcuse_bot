@@ -314,8 +314,9 @@ module.exports = async (request, response) => {
         "borrow-book": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, message.from.id)
       }
 
-      var func = callbackFunctions[callbackData.split(' ')[0]]
-      if (func) await func(db, bot, message.chat.id, callbackData.split(' ', 2)[1], message)
+      callbackData = callbackData.split(' ')
+      var func = callbackFunctions[callbackData.shift()]
+      if (func) await func(db, bot, message.chat.id, callbackData.join(' '), message)
 
       bot.answerCallbackQuery(body.callback_query.id);
     } else if (body.message && body.message.photo && body.message.photo.length > 0) {
@@ -326,8 +327,9 @@ module.exports = async (request, response) => {
           "/add-book": addBook,
         }
 
-        var func = commands[caption.split(' ')[0]]
-        if (func) await func (db, bot, body.message.chat.id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
+        caption = caption.split(' ')
+        var func = commands[caption.shift()]
+        if (func) await func (db, bot, body.message.chat.id, caption.join(' '), body.message.from.id, fileId)
 
      } else if (body.message) {
       const { chat: { id }, text } = body.message;
@@ -347,8 +349,9 @@ module.exports = async (request, response) => {
         "/statistics": statistics
       }
 
-      var func = commands[text.split(' ')[0]]
-      if (func) await func (db, bot, id, text.split(' ',2)[1] || '', body.message.from.id)
+      text = text.split(' ')
+      var func = commands[text.shift()]
+      if (func) await func (db, bot, id, text.join(' '), body.message.from.id)
     }
   }
   catch(error) {
