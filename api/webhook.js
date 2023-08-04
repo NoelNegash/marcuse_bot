@@ -322,6 +322,8 @@ module.exports = async (request, response) => {
         const fileId = body.photo[0].file_id;
         const caption = body.caption;
 
+        throw caption
+
         await bot.sendMessage(body.message.chat.id, caption + " " + fileId, {parse_mode: 'html'});
 
         var commands = {
