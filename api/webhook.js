@@ -247,7 +247,7 @@ async function returnBook(db, bot, chatId, message, telegramId) {
     }
   }
 
-  if (!bookReturned) await bot.sendMessage(chatId, "Book is not borrowed.", {parse_mode: 'html'});
+  if (!bookReturned) await bot.sendMessage(chatId, "Book is not borrowed by you.", {parse_mode: 'html'});
 }
 async function overdueBooks(db, bot, chatId, message) {
   var books = await db.collection('books').get();
