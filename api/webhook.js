@@ -85,16 +85,20 @@ async function memberInfo(db, bot, chatId, message) {
 }
 async function listBooks(db, bot, chatId) {
   var books = await db.collection('books').get();
-  var returnMessage = ''
+  var returnKeyboard = [];
 
   books.forEach((b) => {
     b = b.data()
-
-    returnMessage += `${prettifyBook(b, true)}\n`;
+    returnKeyboard.push([
+      {
+        text: prettifyBook(b, true),
+        callback_data: "book-details "+b.isbn
+      }
+    ])
   })
 
-  if (returnMessage == '') returnMessage = "No books yet."
-  await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
+  var returnMessage = returnKeyboard.length == 0 ? "No books." : `All books.`
+  await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
 }
 async function addBook(db, bot, chatId, message, telegramId, fileId) {
   var split = quoteSplit(message)
