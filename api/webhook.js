@@ -240,7 +240,7 @@ async function returnBook(db, bot, chatId, message, telegramId) {
         borrowed_date: null
       };
       await bookRef.update(updates)
-      
+
       await bot.sendMessage(chatId, "Book returned.", {parse_mode: 'html'});
       bookReturned = true
     }
@@ -328,7 +328,7 @@ module.exports = async (request, response) => {
 
         caption = caption.split(' ')
         var func = commands[caption.shift()]
-        if (func) await func (db, bot, body.message.chat.id, caption.join(' '), body.message.from.id, fileId)
+        if (func) await func (db, bot, body.message.chat.id, caption.join(' '), body.from.id, fileId)
 
      } else if (body.message) {
       var { chat: { id }, text } = body.message;
