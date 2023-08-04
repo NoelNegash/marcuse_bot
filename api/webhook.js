@@ -161,7 +161,7 @@ async function searchBook(db, bot, chatId, message) {
     }
   })
 
-  var returnMessage = `Searched "${message.split('/search-book ', 2)[1] || ''}".\n ${returnKeyboard.length == 0 ? "No" : returnKeyboard.length} book"${returnKeyboard.length == 1 ? "" : "s"} found.`
+  var returnMessage = `Searched "${message}".\n ${returnKeyboard.length == 0 ? "No" : returnKeyboard.length} book"${returnKeyboard.length == 1 ? "" : "s"} found.`
   await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
 }
 async function borrowBook(db, bot, chatId, message, telegramId) {
@@ -319,11 +319,10 @@ module.exports = async (request, response) => {
 
       bot.answerCallbackQuery(body.callback_query.id);
     } else if (body.photo && body.photo.length > 0) {
-
-      
-        await bot.sendMessage(body.message.chat.id, JSON.stringify(body.photo), {parse_mode: 'html'});
         const fileId = body.photo[0].file_id;
         const caption = body.caption;
+
+        await bot.sendMessage(body.message.chat.id, caption + " " + fileId, {parse_mode: 'html'});
 
         var commands = {
           "/add-book": addBook,
