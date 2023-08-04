@@ -321,7 +321,7 @@ module.exports = async (request, response) => {
     } else if (body.photo && body.photo.length > 0) {
 
       
-        await bot.sendMessage(chatId, JSON.stringify(body.photo), {parse_mode: 'html'});
+        await bot.sendMessage(body.message.chat.id, JSON.stringify(body.photo), {parse_mode: 'html'});
         const fileId = body.photo[0].file_id;
         const caption = body.caption;
 
@@ -330,7 +330,7 @@ module.exports = async (request, response) => {
         }
 
         var func = commands[caption.split(' '[0])]
-        if (func) await func (db, bot, id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
+        if (func) await func (db, bot, body.message.chat.id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
 
      } else if (body.message) {
       const { chat: { id }, text } = body.message;
