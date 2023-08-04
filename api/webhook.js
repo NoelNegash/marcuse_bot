@@ -113,7 +113,7 @@ async function addBook(db, bot, chatId, message, telegramId, fileId) {
     return;
   }
   if (author == undefined || author == '') {
-    await bot.sendMessage(chatId, "Add an author.", {parse_mode: 'html'});
+    await bot.sendMessage(chatId, "Add an author." + split, {parse_mode: 'html'});
     return;
   }
   if (isbn == undefined || isbn == '') {
@@ -321,8 +321,6 @@ module.exports = async (request, response) => {
     } else if (body.message && body.message.photo && body.message.photo.length > 0) {
         const caption = body.message.caption;
         const fileId = body.message.photo[0].file_id;
-
-        await bot.sendMessage(body.message.chat.id, caption + " " + fileId, {parse_mode: 'html'});
 
         var commands = {
           "/add-book": addBook,
