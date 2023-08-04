@@ -277,7 +277,11 @@ async function callbackBookDetails(db, bot, chatId, data) {
   ];
 
   
-  await bot.sendPhoto(chatId, SERVER_URL + "assets/covers/default.png", {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
+  await bot.sendPhoto(chatId, SERVER_URL + "assets/covers/default.png", {
+    caption: prettifyBook(b),
+    reply_markup: {inline_keyboard: returnKeyboard}, 
+    parse_mode: 'html'
+  });
 }
 
 
