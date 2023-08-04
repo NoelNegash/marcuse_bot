@@ -318,11 +318,9 @@ module.exports = async (request, response) => {
       if (func) await func(db, bot, message.chat.id, callbackData.split(' ', 2)[1], message)
 
       bot.answerCallbackQuery(body.callback_query.id);
-    } else if (body.photo && body.photo.length > 0) {
-        const fileId = body.photo[0].file_id;
-        const caption = body.caption;
-
-        throw caption
+    } else if (body.message && body.message.photo && body.message.photo.length > 0) {
+        const fileId = body.message.photo[0].file_id;
+        const caption = body.message.photo[0].caption;
 
         await bot.sendMessage(body.message.chat.id, caption + " " + fileId, {parse_mode: 'html'});
 
@@ -348,7 +346,7 @@ module.exports = async (request, response) => {
         "/reserve-book": reserveBook,
         "/return-book": returnBook,
         "/overdue-books": overdueBooks,
-        "/statistics":statistics
+        "/statistics": statistics
       }
 
       var func = commands[text.split(' ')[0]]
