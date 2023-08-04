@@ -329,7 +329,7 @@ module.exports = async (request, response) => {
           "/add-book": addBook,
         }
 
-        var func = commands[caption.split(' '[0])]
+        var func = commands[caption.split(' ')[0]]
         if (func) await func (db, bot, body.message.chat.id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
 
      } else if (body.message) {
@@ -350,7 +350,7 @@ module.exports = async (request, response) => {
         "/statistics":statistics
       }
 
-      var func = commands[text.split(' '[0])]
+      var func = commands[text.split(' ')[0]]
       if (func) await func (db, bot, id, text.split(' ',2)[1] || '', body.message.from.id)
     }
   }
