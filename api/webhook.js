@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const SERVER_URL = "http://marcuse-bot.vercel.app/"
 
 function prettifyBook(book, verbose = false) {
-  var res = `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` 
+  var res = `${book.title} - ${book.author}    ISBN: [${book.isbn}]` 
   if (verbose) res += `${book.borrowed?"[Checked Out]":""} ${book.reserved?"[Reserved]":""} ${book.special?"[Special]":""}`;
   return res
 }
@@ -301,7 +301,8 @@ module.exports = async (request, response) => {
       const message = body.callback_query.message;
 
       var callbackFunctions = {
-        "book-details": callbackBookDetails
+        "book-details": callbackBookDetails,
+        "borrow": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, message.from.id)
       }
 
       var func = callbackFunctions[callbackData.split(' ')[0]]
