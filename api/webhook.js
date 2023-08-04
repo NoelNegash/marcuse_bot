@@ -140,7 +140,7 @@ async function searchBook(db, bot, chatId, message) {
   var books = await db.collection('books').get();
   var returnMessage = ''
 
-  const returnKeyboard = [
+  var returnKeyboard = [
 
   ];
 
@@ -162,7 +162,7 @@ async function searchBook(db, bot, chatId, message) {
   })
 
   if (returnMessage == '') returnMessage = "No books found."
-  await bot.sendMessage(chatId, returnMessage, {reply_markup: returnKeyboard, parse_mode: 'html'});
+  await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
 }
 async function borrowBook(db, bot, chatId, message, telegramId) {
   var returnMessage = ''
