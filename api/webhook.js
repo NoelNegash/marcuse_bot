@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
 
-const url = "https://marcuse-bot.vercel.app/"
+const SERVER_URL = "https://marcuse-bot.vercel.app/"
 
 function prettifyBook(book, verbose = false) {
   var res = `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` 
@@ -277,7 +277,15 @@ async function callbackBookDetails(db, bot, chatId, data) {
     ]
   ];
 
-  await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
+  const message = {
+    chat_id: chatId,
+    photo: SERVER_URL + "assets/covers/default.png",
+    reply_markup: {
+      inline_keyboard: returnKeyboard
+    }
+  };
+  
+  await bot.sendPhoto(message)
 }
 
 
