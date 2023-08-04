@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
 
-const SERVER_URL = "https://marcuse-bot.vercel.app/"
+const SERVER_URL = "http://marcuse-bot.vercel.app/"
 
 function prettifyBook(book, verbose = false) {
   var res = `"${book.title}" by ${book.author}    ISBN: ${book.isbn}` 
