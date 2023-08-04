@@ -327,7 +327,7 @@ module.exports = async (request, response) => {
         }
 
         var func = commands[caption.split(' '[0])]
-        if (func) func (db, bot, id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
+        if (func) await func (db, bot, id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
 
      } else if (body.message) {
       const { chat: { id }, text } = body.message;
@@ -348,7 +348,7 @@ module.exports = async (request, response) => {
       }
 
       var func = commands[text.split(' '[0])]
-      if (func) func (db, bot, id, text.split(' ',2)[1] || '', body.message.from.id)
+      if (func) await func (db, bot, id, text.split(' ',2)[1] || '', body.message.from.id)
     }
   }
   catch(error) {
