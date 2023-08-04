@@ -310,7 +310,7 @@ module.exports = async (request, response) => {
 
       var callbackFunctions = {
         "book-details": callbackBookDetails,
-        "borrow-book": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, message.from.id)
+        "borrow-book": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, body.callback_query.from.id)
       }
 
       callbackData = callbackData.split(' ')
@@ -328,7 +328,7 @@ module.exports = async (request, response) => {
 
         caption = caption.split(' ')
         var func = commands[caption.shift()]
-        if (func) await func (db, bot, body.message.chat.id, caption.join(' '), body.from.id, fileId)
+        if (func) await func (db, bot, body.message.chat.id, caption.join(' '), body.message.from.id, fileId)
 
      } else if (body.message) {
       var { chat: { id }, text } = body.message;
