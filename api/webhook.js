@@ -302,7 +302,7 @@ module.exports = async (request, response) => {
 
       var callbackFunctions = {
         "book-details": callbackBookDetails,
-        "borrow": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, message.from.id)
+        "borrow-book": (db, bot, chatId, text) => borrowBook(db, bot, chatId, text, message.from.id)
       }
 
       var func = callbackFunctions[callbackData.split(' ')[0]]
