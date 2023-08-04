@@ -83,6 +83,23 @@ async function memberInfo(db, bot, chatId, message) {
   }
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
+async function myBooks(db, bot, chatId, message, telegramId) {
+  var books = await db.collection('books').where("borrowed", '==', telegramId).get();
+  var returnKeyboard = [];
+
+  books.forEach((b) => {
+    b = b.data()
+    returnKeyboard.push([
+      {
+        text: prettifyBook(b, true),
+        callback_data: "book-details "+b.isbn
+      }
+    ])
+  })
+
+  var returnMessage = returnKeyboard.length == 0 ? "No books borrowed." : `Your books.`
+  await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
+}
 async function listBooks(db, bot, chatId) {
   var books = await db.collection('books').get();
   var returnKeyboard = [];
@@ -343,6 +360,7 @@ module.exports = async (request, response) => {
         "/register": registerMember,
         "/member": memberInfo,
         "/add-book": addBook,
+        "/my-books": myBooks,
         "/list-books": listBooks,
         "/remove-book": removeBook,
         "/search-book": searchBook, 
