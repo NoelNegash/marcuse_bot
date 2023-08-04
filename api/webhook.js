@@ -138,11 +138,8 @@ async function removeBook(db, bot, chatId, message) {
 async function searchBook(db, bot, chatId, message) {
   var searchTerms = (message.split('/search-book ', 2)[1] || '').toLowerCase().split(' ').filter(x => x != '')
   var books = await db.collection('books').get();
-  var returnMessage = ''
 
-  var returnKeyboard = [
-
-  ];
+  var returnKeyboard = [];
 
   books.forEach((b) => {
     b = b.data()
@@ -150,8 +147,6 @@ async function searchBook(db, bot, chatId, message) {
     if (stringContainsAny(b.title.toLowerCase(), searchTerms) ||
         stringContainsAny(b.author.toLowerCase(), searchTerms) ||
         stringContainsAny(b.isbn.toLowerCase(), searchTerms)) {
-
-      returnMessage += `${prettifyBook(b, true)}\n`;
       returnKeyboard.push([
         {
           text: prettifyBook(b, true),
@@ -161,7 +156,7 @@ async function searchBook(db, bot, chatId, message) {
     }
   })
 
-  if (returnMessage == '') returnMessage = "No books found."
+  var returnMessage = `Searched "${message.split('/search-book ', 2)[1] || ''}".\n ${returnKeyboard.length == 0 ? "No" : returnKeyboard.length} book"${returnKeyboard.length == 1 ? "" : "s"} found.`
   await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
 }
 async function borrowBook(db, bot, chatId, message, telegramId) {
@@ -267,6 +262,24 @@ async function overdueBooks(db, bot, chatId, message) {
 async function statistics(db, bot, chatId, message) {}
 
 
+async function callbackBookDetails(db, bot, chatId, data) {
+  var isbn = data;
+
+  var books = await db.collection('books').where("isbn", "==", isbn).get();
+  var b = books[0].data();
+
+  var returnMessage = prettifyBook(b, true)
+  var returnKeyboard = [
+    [
+      {text: "Borrow", callback_data: "borrow-book "+b.isbn},
+      {text: "Reserve", callback_data: "reserve-book "+b.isbn}
+    ]
+  ];
+
+  await bot.sendMessage(chatId, returnMessage, {reply_markup: {inline_keyboard: returnKeyboard}, parse_mode: 'html'});
+}
+
+
 module.exports = async (request, response) => {
   try {
     const firebaseAccount = JSON.parse(process.env.FIREBASE_KEY);
@@ -281,7 +294,20 @@ module.exports = async (request, response) => {
 
     const { body } = request;
 
-    if (body.message) {
+    // check if the update contains a callback query
+    if (body.callback_query) {
+      const callbackData = update.callback_query.data;
+      const message = update.callback_query.message;
+
+      var callbackFunctions = {
+        "book-details ": callbackBookDetails
+      }
+
+      var func = callbackFunctions[callbackData.split(' '[0])]
+      if (func) await func(db, bot, message.chat.id, callbackData.split(' ', 2)[1], message)
+
+      bot.answerCallbackQuery(body.callback_query.id);
+    } else if (body.message) {
       const { chat: { id }, text } = body.message;
 
       if (text == "/list-members") {
