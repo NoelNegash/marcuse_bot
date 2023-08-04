@@ -296,8 +296,8 @@ module.exports = async (request, response) => {
 
     // check if the update contains a callback query
     if (body.callback_query) {
-      const callbackData = update.callback_query.data;
-      const message = update.callback_query.message;
+      const callbackData = body.callback_query.data;
+      const message = body.callback_query.message;
 
       var callbackFunctions = {
         "book-details ": callbackBookDetails
