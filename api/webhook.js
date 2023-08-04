@@ -96,10 +96,14 @@ async function listBooks(db, bot, chatId) {
   if (returnMessage == '') returnMessage = "No books yet."
   await bot.sendMessage(chatId, returnMessage, {parse_mode: 'html'});
 }
-async function addBook(db, bot, chatId, message, telegramId) {
+async function addBook(db, bot, chatId, message, telegramId, fileId) {
   var split = quoteSplit(message)
   var title = split[0], author = split[1], isbn = split[2], special = split[3]
   var canRegister = (await db.collection('members').where('telegram_id', '==', telegramId).get()).empty;
+  if (!fileId) {
+    await bot.sendMessage(chatId, "Add an image.", {parse_mode: 'html'});
+    return;
+  }
   if (canRegister) {
     await bot.sendMessage(chatId, "You are not a registered member.", {parse_mode: 'html'});
     return;
@@ -122,6 +126,7 @@ async function addBook(db, bot, chatId, message, telegramId) {
     "title": title,
     "author":author,
     "isbn": isbn,
+    "photo": fileId,
     total_borrowed: 0,
     borrowed: null,
     borrowed_date: null,
@@ -277,7 +282,7 @@ async function callbackBookDetails(db, bot, chatId, data) {
   ];
 
   
-  await bot.sendPhoto(chatId, SERVER_URL + "assets/covers/default.png", {
+  await bot.sendPhoto(chatId, b.photo || (SERVER_URL + "assets/covers/default.png"), {
     caption: prettifyBook(b),
     reply_markup: {inline_keyboard: returnKeyboard}, 
     parse_mode: 'html'
@@ -313,15 +318,26 @@ module.exports = async (request, response) => {
       if (func) await func(db, bot, message.chat.id, callbackData.split(' ', 2)[1], message)
 
       bot.answerCallbackQuery(body.callback_query.id);
-    } else if (body.message) {
+    } else if (body.photo && body.photo.length > 0) {
+        const fileId = body.photo[0].file_id;
+        const caption = body.caption;
+
+        var commands = {
+          "/add-book": addBook,
+        }
+
+        var func = commands[caption.split(' '[0])]
+        if (func) func (db, bot, id, caption.split(' ',2)[1] || '', body.message.from.id, fileId)
+
+     } else if (body.message) {
       const { chat: { id }, text } = body.message;
 
       var commands = {
         "/list-members": listMembers,
         "/register": registerMember,
         "/member": memberInfo,
-        "/list-books": listBooks,
         "/add-book": addBook,
+        "/list-books": listBooks,
         "/remove-book": removeBook,
         "/search-book": searchBook, 
         "/borrow-book": borrowBook,
