@@ -319,8 +319,8 @@ module.exports = async (request, response) => {
 
       bot.answerCallbackQuery(body.callback_query.id);
     } else if (body.message && body.message.photo && body.message.photo.length > 0) {
+        const caption = body.message.caption;
         const fileId = body.message.photo[0].file_id;
-        const caption = body.message.photo[0].caption;
 
         await bot.sendMessage(body.message.chat.id, caption + " " + fileId, {parse_mode: 'html'});
 
