@@ -263,10 +263,11 @@ async function statistics(db, bot, chatId, message) {}
 
 
 async function callbackBookDetails(db, bot, chatId, data) {
+
   var isbn = data;
 
   var books = await db.collection('books').where("isbn", "==", isbn).get();
-  var b = books[0].data();
+  var b = books.docs[0].data();
 
   var returnMessage = prettifyBook(b, true)
   var returnKeyboard = [
