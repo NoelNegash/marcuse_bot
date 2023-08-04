@@ -5,7 +5,7 @@ const SERVER_URL = "http://marcuse-bot.vercel.app/"
 
 function prettifyBook(book, verbose = false) {
   var res = `${book.title} - ${book.author}    ISBN: [${book.isbn}]` 
-  if (verbose) res += `${book.borrowed?"[Checked Out]":""} ${book.reserved?"[Reserved]":""} ${book.special?"[Special]":""}`;
+  if (verbose) res += `${book.borrowed?" [Checked Out]":""}${book.reserved?" [Reserved]":""}${book.special?" [Special]":""}`;
   return res
 }
 function quoteSplit(s) {
@@ -177,22 +177,22 @@ async function borrowBook(db, bot, chatId, message, telegramId) {
     var bookRef = db.collection('books').doc(b.id);
     b = b.data()
 
+    if (b.borrowed) {
+      alreadyBorrowed = true;
+      break;
+    }
+
     var members = await db.collection('members').where("telegram_id", '==', telegramId).get();
     for (var j = 0; j < members.docs.length; j++) {
       var m = members.docs[j]
       var data = m.data();
-      if (data.borrowed_books.includes(bookId)) {
-        alreadyBorrowed = true;
-        break;
-      }
       await db.collection('members').doc(m.id).update(
         {
-          total_borrowed: m.data().total_borrowed + 1,
-          borrowed_books: m.data().borrowed_books.concat(bookId)
+          total_borrowed: data.total_borrowed + 1,
+          borrowed_books: data.borrowed_books.concat(bookId)
         }
       )
-    }   
-    if (alreadyBorrowed) break;
+    }
     
     var dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 7);
